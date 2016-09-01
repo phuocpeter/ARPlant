@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>FirstPlanted</key>
+	<false/>
+	<key>PlantData</key>
+	<dict>
+		<key>CurrentStage</key>
+		<integer>0</integer>
+		<key>CurrentEXP</key>
+		<integer>0</integer>
+		<key>Location</key>
+		<dict>
+			<key>Latitude</key>
+			<integer>0</integer>
+			<key>Longitude</key>
+			<integer>0</integer>
+		</dict>
+	</dict>
+</dict>
+</plist>
