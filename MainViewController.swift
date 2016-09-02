@@ -13,10 +13,10 @@ import HDAugmentedReality
 class MainViewController: UIViewController, CLLocationManagerDelegate, ARDataSource {
 
   let locationManager = CLLocationManager()
-  var annotations = [ARAnnotation]()
   var latitude: Double!
   var longitude: Double!
   var plistManager: Plist!
+  var plant: TPPlant!
   
   @IBOutlet weak var stageLabel: UILabel!
   @IBOutlet weak var expLabel: UILabel!
@@ -29,7 +29,11 @@ class MainViewController: UIViewController, CLLocationManagerDelegate, ARDataSou
     plistManager = Plist(name: "UserData")
     
     setupLocationService()
-    checkIfPlanted()
+    if !checkIfPlanted() { promptNewPlant() }
+    loadPreviousPlant()
+    stageLabel.text = "\(plant.latitude)"
+    expLabel.text = "\(plant.longitude)"
+    plantImageView.image = UIImage(named: "Plant")
   }
 
   override func didReceiveMemoryWarning() {
@@ -49,12 +53,12 @@ class MainViewController: UIViewController, CLLocationManagerDelegate, ARDataSou
   
   func ar(arViewController: ARViewController, viewForAnnotation: ARAnnotation) -> ARAnnotationView {
     let annotationView = TPPlantAnnotationView()
-    annotationView.frame = CGRect(x: 0,y: 0,width: 181,height: 150)
+    annotationView.frame = CGRect(x: 0,y: 0,width: 200,height: 200)
     return annotationView
   }
   
   @IBAction func viewPlant(sender: AnyObject) {
-    openAr(annotations)
+    openAr([plant.getPlantAnnotation()])
   }
   
   // MARK: - Helper Methods
@@ -73,40 +77,71 @@ class MainViewController: UIViewController, CLLocationManagerDelegate, ARDataSou
   }
   
   /**
-   * 
+   * Checks if the plant already recorded in the plist.
+   * - Returns: true or false
    */
-  func checkIfPlanted() {
+  func checkIfPlanted() -> Bool {
     if let dict = plistManager.getValuesInPlistFile() {
-      let firstPlanted = dict["FirstPlanted"] as! Bool
-      if !firstPlanted {
-        let alert = UIAlertController(title: "Welcome", message: "Not planted", preferredStyle: .Alert)
-        let ok = UIAlertAction(title: "Plant", style: .Default, handler: plantNew)
-        let cancel = UIAlertAction(title: "Cancel", style: .Cancel, handler: nil)
-        alert.addAction(ok)
-        alert.addAction(cancel)
-        parentViewController!.presentViewController(alert, animated: true, completion: nil)
-      }
+      return dict["FirstPlanted"] as! Bool
     }
+    return false
   }
   
+  /**
+   * Prompts the user to plant new.
+   */
+  func promptNewPlant() {
+    let alert = UIAlertController(title: "Welcome", message: "Plant here at this location?", preferredStyle: .Alert)
+    let ok = UIAlertAction(title: "Plant", style: .Default, handler: plantNew)
+    alert.addAction(ok)
+    parentViewController!.presentViewController(alert, animated: true, completion: nil)
+  }
+  
+  /// Handler to plant new
   func plantNew(action: UIAlertAction){
     guard let lat = latitude else { return }
     guard let lon = longitude else { return }
     
-    let plantAnnotation = ARAnnotation()
-    plantAnnotation.location = CLLocation(latitude: lat, longitude: lon)
-    plantAnnotation.title = "Plant"
-    annotations.append(plantAnnotation)
+    plant = TPPlant(latitude: lat, longitude: lon)
     
-    openAr(annotations)
+    if let dict = plistManager.getMutablePlistFile() {
+      dict["FirstPlanted"] = true
+      let plantData = dict["PlantData"] as! NSMutableDictionary
+      let plantLocation = plantData["Location"] as! NSMutableDictionary
+      plantLocation["Latitude"] = lat
+      plantLocation["Longitude"] = lon
+      plantData["Location"] = plantLocation
+      dict["PlantData"] = plantData
+      do {
+          try plistManager.addValuesToPlistFile(dict)
+      } catch {
+        print(error)
+      }
+    }
+    
+    openAr([plant.getPlantAnnotation()])
   }
   
+  /**
+   * Loads previous plant.
+   */
+  func loadPreviousPlant() {
+    if let dict = plistManager.getValuesInPlistFile() {
+      let plantData = dict["PlantData"] as! NSDictionary
+      plant = TPPlant(plantData: plantData)
+    }
+  }
+  
+  /**
+   * Presents the AR View.
+   * - Parameters:
+   *   - annotations: array of ARAnnotation to be included in the view.
+   */
   func openAr(annotations: [ARAnnotation]) {
-    
     let arViewController = ARViewController()
     arViewController.debugEnabled = true
     arViewController.dataSource = self
-    arViewController.maxDistance = 10
+    arViewController.maxDistance = 200
     arViewController.maxVisibleAnnotations = 100
     arViewController.maxVerticalLevel = 5
     arViewController.headingSmoothingFactor = 0.05
@@ -118,6 +153,7 @@ class MainViewController: UIViewController, CLLocationManagerDelegate, ARDataSou
     let b = UIView(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
     b.backgroundColor = UIColor.redColor()
     arViewController.view.addSubview(b)
+    arViewController.view.bringSubviewToFront(b)
   }
 
 }
