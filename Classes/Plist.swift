@@ -14,41 +14,41 @@ import Foundation
 struct Plist {
   
   /// Error cases of Plist.
-  enum PlistError: ErrorType {
-    case FileNotWritten
-    case FileDoesNotExist
+  enum PlistError: Error {
+    case fileNotWritten
+    case fileDoesNotExist
   }
   
   let name: String
   
   /// Source of the model plist in the bundle.
   var sourcePath: String? {
-    guard let path = NSBundle.mainBundle().pathForResource(name, ofType: "plist") else { return .None }
+    guard let path = Bundle.main.path(forResource: name, ofType: "plist") else { return .none }
     return path
   }
   
   /// Destination of the plist in user's document.
   var destPath: String? {
-    guard sourcePath != .None else { return .None }
-    let dir = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)[0]
-    return (dir as NSString).stringByAppendingPathComponent("\(name).plist")
+    guard sourcePath != .none else { return .none }
+    let dir = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0]
+    return (dir as NSString).appendingPathComponent("\(name).plist")
   }
   
   // MARK: - Initialization
   
   init?(name: String) {
     self.name = name
-    let fileManager = NSFileManager.defaultManager()
+    let fileManager = FileManager.default
     
     // Safety Checks
     guard let source = sourcePath else { return nil }
     guard let dest = destPath else { return nil }
-    guard fileManager.fileExistsAtPath(source) else { return nil }
+    guard fileManager.fileExists(atPath: source) else { return nil }
     
     // No file exist in user's document
-    if !fileManager.fileExistsAtPath(dest) {
+    if !fileManager.fileExists(atPath: dest) {
       do {
-        try fileManager.copyItemAtPath(source, toPath: dest)
+        try fileManager.copyItem(atPath: source, toPath: dest)
       } catch let error as NSError {
         print("Unable to copy file. Error: \(error.localizedDescription)")
         return nil
@@ -63,12 +63,12 @@ struct Plist {
    *            Returns nil if failed.
    */
   func getValuesInPlistFile() -> NSDictionary? {
-    let fileManager = NSFileManager.defaultManager()
-    if fileManager.fileExistsAtPath(destPath!) {
-      guard let dict = NSDictionary(contentsOfFile: destPath!) else { return .None }
+    let fileManager = FileManager.default
+    if fileManager.fileExists(atPath: destPath!) {
+      guard let dict = NSDictionary(contentsOfFile: destPath!) else { return .none }
       return dict
     }
-    return .None
+    return .none
   }
   
   /**
@@ -76,12 +76,12 @@ struct Plist {
    *            Returns nil if failed.
    */
   func getMutablePlistFile() -> NSMutableDictionary? {
-    let fileManager = NSFileManager.defaultManager()
-    if fileManager.fileExistsAtPath(destPath!) {
-      guard let dict = NSMutableDictionary(contentsOfFile: destPath!) else { return .None }
+    let fileManager = FileManager.default
+    if fileManager.fileExists(atPath: destPath!) {
+      guard let dict = NSMutableDictionary(contentsOfFile: destPath!) else { return .none }
       return dict
     }
-    return .None
+    return .none
   }
   
   /**
@@ -91,14 +91,14 @@ struct Plist {
    * - Throws: FileNotWritten when operation failed.
    *           FileDoesNotExist when file cannot be found.
    */
-  func addValuesToPlistFile(dictionary: NSDictionary) throws {
-    let fileManager = NSFileManager.defaultManager()
-    if fileManager.fileExistsAtPath(destPath!) {
-      if !dictionary.writeToFile(destPath!, atomically: false) {
-        throw PlistError.FileNotWritten
+  func addValuesToPlistFile(_ dictionary: NSDictionary) throws {
+    let fileManager = FileManager.default
+    if fileManager.fileExists(atPath: destPath!) {
+      if !dictionary.write(toFile: destPath!, atomically: false) {
+        throw PlistError.fileNotWritten
       }
     } else {
-      throw PlistError.FileDoesNotExist
+      throw PlistError.fileDoesNotExist
     }
   }
   

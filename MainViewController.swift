@@ -43,7 +43,7 @@ class MainViewController: UIViewController, CLLocationManagerDelegate, ARDataSou
   
   // MARK: - CL Location Manager Delegate
 
-  func locationManager(manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+  func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
     let location: CLLocationCoordinate2D = (locationManager.location?.coordinate)!
     latitude = location.latitude
     longitude = location.longitude
@@ -51,13 +51,13 @@ class MainViewController: UIViewController, CLLocationManagerDelegate, ARDataSou
   
   // MARK: - AR Data Source
   
-  func ar(arViewController: ARViewController, viewForAnnotation: ARAnnotation) -> ARAnnotationView {
+  func ar(_ arViewController: ARViewController, viewForAnnotation: ARAnnotation) -> ARAnnotationView {
     let annotationView = TPPlantAnnotationView()
     annotationView.frame = CGRect(x: 0,y: 0,width: 200,height: 200)
     return annotationView
   }
   
-  @IBAction func viewPlant(sender: AnyObject) {
+  @IBAction func viewPlant(_ sender: AnyObject) {
     openAr([plant.getPlantAnnotation()])
   }
   
@@ -68,8 +68,8 @@ class MainViewController: UIViewController, CLLocationManagerDelegate, ARDataSou
     locationManager.requestWhenInUseAuthorization()
     if !CLLocationManager.locationServicesEnabled() {
       // Location Service not enabled -> app not usable
-      let alert = UIAlertController(title: "Warning", message: "Please enable location service", preferredStyle: .Alert)
-      parentViewController!.presentViewController(alert, animated: true, completion: nil)
+      let alert = UIAlertController(title: "Warning", message: "Please enable location service", preferredStyle: .alert)
+      parent!.present(alert, animated: true, completion: nil)
     }
     locationManager.delegate = self
     locationManager.desiredAccuracy = kCLLocationAccuracyBest
@@ -91,14 +91,14 @@ class MainViewController: UIViewController, CLLocationManagerDelegate, ARDataSou
    * Prompts the user to plant new.
    */
   func promptNewPlant() {
-    let alert = UIAlertController(title: "Welcome", message: "Plant here at this location?", preferredStyle: .Alert)
-    let ok = UIAlertAction(title: "Plant", style: .Default, handler: plantNew)
+    let alert = UIAlertController(title: "Welcome", message: "Plant here at this location?", preferredStyle: .alert)
+    let ok = UIAlertAction(title: "Plant", style: .default, handler: plantNew)
     alert.addAction(ok)
-    parentViewController!.presentViewController(alert, animated: true, completion: nil)
+    parent!.present(alert, animated: true, completion: nil)
   }
   
   /// Handler to plant new
-  func plantNew(action: UIAlertAction){
+  func plantNew(_ action: UIAlertAction){
     guard let lat = latitude else { return }
     guard let lon = longitude else { return }
     
@@ -137,7 +137,7 @@ class MainViewController: UIViewController, CLLocationManagerDelegate, ARDataSou
    * - Parameters:
    *   - annotations: array of ARAnnotation to be included in the view.
    */
-  func openAr(annotations: [ARAnnotation]) {
+  func openAr(_ annotations: [ARAnnotation]) {
     let arViewController = ARViewController()
     arViewController.debugEnabled = true
     arViewController.dataSource = self
@@ -148,12 +148,12 @@ class MainViewController: UIViewController, CLLocationManagerDelegate, ARDataSou
     arViewController.trackingManager.userDistanceFilter = 25
     arViewController.trackingManager.reloadDistanceFilter = 75
     arViewController.setAnnotations(annotations)
-    self.presentViewController(arViewController, animated: true, completion: nil)
+    self.present(arViewController, animated: true, completion: nil)
     
     let b = UIView(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
-    b.backgroundColor = UIColor.redColor()
+    b.backgroundColor = UIColor.red
     arViewController.view.addSubview(b)
-    arViewController.view.bringSubviewToFront(b)
+    arViewController.view.bringSubview(toFront: b)
   }
 
 }

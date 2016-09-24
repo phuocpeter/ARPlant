@@ -44,18 +44,18 @@ class TPPlantAnnotationView: ARAnnotationView, UIGestureRecognizerDelegate {
     // Distance Label
     distanceLabel?.removeFromSuperview()
     let label = UILabel()
-    label.font = UIFont.systemFontOfSize(15)
-    label.textAlignment = .Center
+    label.font = UIFont.systemFont(ofSize: 15)
+    label.textAlignment = .center
     label.numberOfLines = 0
-    label.backgroundColor = UIColor.clearColor()
-    label.textColor = UIColor.whiteColor()
+    label.backgroundColor = UIColor.clear
+    label.textColor = UIColor.white
     self.addSubview(label)
     self.distanceLabel = label
   }
   
   func layoutUI() {
-    imageView?.frame = CGRectMake(0, 0, imageView!.image!.size.width, imageView!.image!.size.height)
-    distanceLabel?.frame = CGRectMake(0, imageView!.image!.size.height, self.frame.width, self.frame.height - imageView!.image!.size.height)
+    imageView?.frame = CGRect(x: 0, y: 0, width: imageView!.image!.size.width, height: imageView!.image!.size.height)
+    distanceLabel?.frame = CGRect(x: 0, y: imageView!.image!.size.height, width: self.frame.width, height: self.frame.height - imageView!.image!.size.height)
   }
   
 }
